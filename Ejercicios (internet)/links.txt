@@ -1,0 +1,7 @@
+https://es.slideshare.net/bryanzerool/taller-modelo-entidad-relacion-12902146
+https://es.slideshare.net/Djstone10/ejercicios-diseoentidad-relacin-en-la-creacin-de-una-bd
+https://josejuansanchez.org/bd/unidad-02-er-extendido/index.html
+https://gestionbasesdatos.readthedocs.io/es/latest/Tema2/Teoria.html#modelo-entidad-relacion
+https://josejuansanchez.org/bd/unidad-02-er/slides.html#(4)
+https://gestionbasesdatos.readthedocs.io/es/latest/Tema2/Actividades.html
+https://www.genbeta.com/desarrollo/fundamento-de-las-bases-de-datos-modelo-entidad-relacion

@@ -1,0 +1,571 @@
+﻿EJERCICIOS DE DDL
+
+1) Crear una vista formada por los numeros de proveedores y numeros de productos
+situados en diferentes localidades.
+     * EL signo "<>" representa el distinto
+    
+    CREATE VIEW V_NUMEROS_PRODUCTOS_PROVEEDORES AS
+    SELECT p.pnro , prov.numero
+    FROM productos as p , proveedores as prov
+    WHERE p.localidad <>prov.localidad
+
+2)Agregar la columna IMPORTADOR  a la tabla PRODUCTOS
+  
+   ALTER TABLE productos add IMPORTADOR varchar(20)
+ 
+3)Crear una vista formada por los registros de los proveedores que viven en wilde.
+
+  CREATE VIEW V_PROVEEDORES_WILDE AS
+  SELECT * FROM proveedores
+  WHERE localidad = "wilde"
+
+*****4) Crear as tablas DEPARTAMENTOS Y EMPLEADOS con sus relaciones, y las tablas
+   PACIENTES  y MEDICAMENTOS con sus relaciones.
+ 
+   CREATE TABLE departamentos 
+   (id_departamentos int ,
+    nombre varchar(20) not null,
+    PRIMARY KEY(id_departamentos));
+   
+  CREATE TABLE empleades
+  (id_empleado int,
+   nombre varchar (30),
+   apellido varchar (30),
+   PRIMARY KEY (id_empleado),
+   FOREING KEY (id_departamentos) REFERENCES departamentos(id_departamentos));
+    
+
+
+  
+
+
+
+EJERCICIOS DE DML
+1)Realizar las siguientes proposiciones SQL con la siguiente estructura:
+
+1)Obtener los detalles completos de todos los productos
+
+  SELECT * FROM productos
+
+2)Obtener los detalles completos de los proveedores de Capital.
+
+
+ 1- SELECT * FROM proveedores where localidad = "Capital Fede"
+
+ 2- SELECT numero,nombre,domicilio,localidad
+    FROM proveedores where localidad = "Capital Fede"
+
+  
+
+3)Obtener todos los envios en los cuales la cantidad esta entre 200 y 300
+  inclusive.
+
+  1- SELECT * FROM prov_prod WHERE cantidad >=200 AND cantidad <=300
+
+  2- SELECT * FROM prov_prod WHERE cantidad BETWEEN 200 and 300
+
+  
+4)Obtener los numeros de los productos suministrados por algun proveedor de 
+  Avellaneda.
+  
+  1- SELECT pnro from prov_prod WHERE numero IN 
+     (SELECT numero FROM proveedores WHERE localidad = "Avellaneda")
+
+  2- utilizando INNER JOIN 
+
+     SELECT p_v.pnro from 
+     prov_prod as p_v, proveedores as p
+     WHERE p_v.numero = p.numero AND
+     p.localidad = "Avellaneda"
+
+
+5)Obtener la cantidad total del producto 1 enviado por el proveedor 103.
+
+  SELECT sum(cantidad) FROM prov_prod WHERE pnro=1 AND numero = 103
+ 
+6) Obtener los numeros de los productos y localidades en los cuales la segunda letra 
+   del nombre de la localidad sea "A"
+
+   SELECT pnro,localidad FROM productos WHERE pnombre LIKE '_a%'
+   
+  
+7) Obtener los precios de los productos enviados por el proveedor 102.
+ 
+  1- SELECT precio FROM productos WHERE pnro IN (SELECT pnro from prov_prod WHERE numero = 102)
+
+  2- utilizando INNER JOIN
+     
+     SELECT pr.precio from productos as pr , prov_prod as p_v 
+     WHERE pr.pnro = p_v.pnro and p_v.numero = 102
+  
+
+
+8) Construir una lista de todas las localidades en las cuales este situado por lo menos un proveedor
+   o un  produto
+
+   SELECT localidad FROM productos 
+   UNION
+   SELECT localidad from proveedores
+
+
+9)Cambiar a "Chico" el tama�o de todos los productos "Medianos" 
+
+  
+   UPDATE productos set tama�o = "Chico"
+   where tama�o = "Mediano"
+
+10) Eliminar todos los productos para los cuales no haya envios
+    
+    1-DELETE FROM productos WHERE 
+      pnro not IN (SELECT pnro FROM prov_prod )
+   
+11) Insertar un nuevo proveedor (107) en la tabla "proveedores".El nombre y la 
+    localidad son "Rosales" y "Wilde" respectivamente ; el domicilio no se conoce todavia.
+
+
+      INSERT INTO proveedores (numero,nombre,localidad)
+      VALUES (107,"Rosales","Wilde")
+
+  
+
+
+2) Dadas las siguientes tablas:
+   1) Obtener la cantidad de unidades maxima. (fila que la cantidad es la mas grande)
+
+     SELECT MAX(cantidad)AS CANTIDAD FROM item_ventas
+
+      
+   
+
+   2)Obtener la cantidad total de unidades vendidas por el producto 'c'.
+
+       
+     // en el caso que se refiera a que "c" pertenece al atributo "cod_producto" 
+     SELECT sum(cantidad) 
+     FROM item_ventas
+     where cod_producto = 'c'
+
+     // en el caso que se refiera a que "c" pertenece al atributo "nombre" 
+     SELECT sum(i_v.cantidad) AS cantidad
+     FROM item_ventas as i_v, productos as p
+     WHERE i_v.cod_producto = p.cod_producto
+     AND p.nombre = 'c' 
+
+     
+    3)Cantidad de unidades vendidas por producto, indicando la descripcion del producto,
+      ordenado de mayor a menor por las cantidades vendidas.
+
+      SELECT p.nombre_producto, SUM(iv.CANTIDAD) AS CANTIDAD 
+      FROM item_ventas AS iv, productos as p 
+      WHERE iv.codigo_producto = p.codigo_producto 
+      GROUP BY p.nombre_producto
+      ORDER BY (SUM(iv.cantidad)) DESC
+
+
+    4)Cantidad de unidades vendidas por producto , indicando la descripcion del
+      producto, ordenado alfabeticamente por nombre de producto para los productos
+      que vendieron mas de 30 unidades
+
+      SELECT p.nombre_producto, SUM(iv.CANTIDAD) AS CANTIDAD 
+      FROM item_ventas AS iv, productos as p
+      WHERE iv.codigo_producto = p.codigo_producto  
+      GROUP BY p.nombre_producto
+      HAVING (SUM(iv.cantidad)>30) 
+      ORDER BY (p.nombre_producto) DESC
+
+    5)Obtener cuantas compras (1 factura = 1 compra) realizo cada cliente 
+      indicando el codigo y nombre del cliente ordenado de mayor a menor.
+   
+      SELECT c.codigo_cliente , c.nombre , count(v.numero_factura) AS COMPRAS
+      FROM clientes AS c , ventas as v 
+      where c.codigo_cliente = v.codigo_cliente
+      GROUP BY c.nombre 
+      ORDER BY count (v.numero_factura) DESC
+
+  ****  6)Promedio de unidades vendidas por producto , indicando el codigo del producto para el cliente 1
+
+      *AVG = La funci�n AVG devuelve el valor promedio para la columna especificada de un grupo.
+      
+      SELECT AVG(i_v.) AS promedio , i_v.codigo_producto
+      FROM item_ventas AS i_v , clientes AS c
+      where i_v.codigo_producto = p.codigo_producto
+      AND p.codigo_cliente = 1 
+      GROUP BY  p.codigo_producto
+      
+
+3) Se tiene la siguiente base de datos relacional:
+    Consultas simples (una sola tabla)
+
+    1)Obtener una lista con los nombres de las distintas oficinas de la empresa.
+     
+      SELECT descripcion FROM Oficinas
+
+    2)Obtener una lista de todos los productos indicando descripcion del producto , su precio de
+      costo y su precio de costo IVA incluido (tomar el IVA como 21%).
+
+    SELECT descripcion , precio , (precio * 1,21) as IVA 
+    FROM productos
+
+    3)Obtener una lista indicando para cada empleado apellido,nombre , fecha de cumplea�os y edad
+      SELECT  apellido , nombre , fecha_nacimiento as fecha_cumplea�os , 
+      (year(getDate() - year(fecha_nacimiento)) as edad
+      FROM empleados
+
+    4)Listar todos los empleados que tiene un jefe asignado
+ 
+      SELECT * FROM empleados where  cod_jefe is not null
+
+    5)Listar los empleados de nombre "Maria" ordenado por apellido
+
+      SELECT * FROM empleados
+      WEHERE nombre = "maria"
+      ORDER BY (apellido) asc
+
+    6)Listar los clientes cuya razon social comience con "l" ordenado por codigo de cliente.
+    
+      SELECT * FROM clientes
+      razon_social  LIKE "L%" 
+      ORDER BY cod_cliente
+
+    7)Listar toda la informacion de los pedidos de Marzo ordenado por fecha de pedido.
+       * "fecha-pedido" va a ser de tipo "Date"
+    
+      SELECT * FROM pedidos 
+      WHERE month(fecha_pedidos) = 3  
+      ORDER BY (fecha_pedidos) asc
+
+      SELECT * FROM pedidos 
+      WHERE fecha_pedidos like "_ _ /03/_ _ _ _"
+      ORDER BY (fecha_pedidos) asc
+
+
+    8)Listar las oficinas que no tienen asignado director.
+     
+      SELECT * FROM oficinas
+      where codigo_director is null
+   
+    9)Listar los 4 productos de menor precio de costo
+    
+      SELECT top 4 * FROM productos
+      ORDER BY precio DESC
+
+      SELECT * FROM productos
+      order by precio asc
+      limit 4
+      
+    10)Listar los c�digos de empleados de los tres que tengan la mayor cuota
+   
+       SELECT cod_empleado FROM empleados 
+
+
+Consultas multitablas:
+    1-De cada producto listar descripcion , raz�n social del fabricante y stock ordenado por razon social
+      y descripcion .
+ 
+      SELECT p.descripcion , f.razon_social , p.cantidad_stock 
+      FROM productos as p , fabricantes as f
+      WHERE p.cod_fabricante = f.cod_fabricante
+      ORDER BY  f.razon_social, p.descripcion
+
+    2-De cada pedido listar codigo de pedido , fecha de pedido , apellido del empleado y razon social
+      del cliente
+  
+      SELECT p.cod_pedido , p.fecha_pedido , e.apellido , c.razon_social
+      FROM pedidos as p , empleados as e , clientes as c
+      WHERE p.cod_empleado = e.cod_empleado AND p.cod_cliente = c.cod_cliente
+
+    3-Listar por cada empleado apellido , cuota asignada , oficina a la que pertenece ordenado en forma
+      descendente por cuota.
+   
+      SELECT e.apellido , d_c.cuota , o.descripcion 
+      FROM empleados as e , datos_contratos as d_c , oficinas as o
+      WHERE e.cod_empleado = d_c.cod_empleado AND e.cod_oficina = o.cod_oficina
+      ORDER BY d_c.cuota DESC
+
+   4-Listar sin repetir la razon social de todos aquellos clientes que hicieron pedidos en Abril.
+    
+     SELECT DISTINCT c.razon_social 
+     FROM clientes as c , pedidos as p
+     WHERE c.cod_cliente = p.cod_cliente
+     AND  month (p.fecha_pedido) = 4
+ 
+   5-Listar sin repetir los productos que fueron pedidos en marzo.
+  
+     SELECT DISTINCT p.*  
+     FROM productos as p , pedidos as pe , detalles_ pedidos as d_p
+     WHERE d_p.cod_producto = p.cod_producto AND d_p.cod_producto = p.cod_producto
+     AND month(pe.fecha_pedio) = 3
+
+   6-Listar aquellos empleados que estan contratados por mas de 10 a�os ordenado por cantidad de a�os
+     en forma descendente.
+   
+     SELECT e.* 
+     FROM empleados as e , datos_contratos as dc
+     WHERE e.cod_empleado = dc.cod_ empleado
+     AND (year(getDate() - year(dc.fecha_contrato)) >10 
+     ORDER BY dc.fecha_contrato
+
+   7-Obtener una lista de los clientes "mayoristas" ordenada por razon social.
+      *lista.descripcion = "mayorista"
+
+     SELECT c.razon_social
+     FROM clientes as c , listas as l
+     WHERE l.cod_lista = c.cod_lista
+     AND l.descripcion = "mayorista"
+     ORDER BY c.razon_social
+
+   8)Obtener una lista sin repetir que indique que productos compro cada cliente , ordenada por razon
+     social y descripcion.
+    
+     SELECT  DISTINCT p.descripcion , c.razon_social
+     FROM productos as p , clientes as c , pe as pedidos
+     WHERE p.cod_producto = pe.cod_producto AND pe.cod_cliente = c.cod_cliente
+     ORDER BY c.razon_social, p.descripcion
+
+   9)Obtener una lista con la descripcion de aquellos productos cuyo stock esta por debajo del punto de
+     reposicion indicando cantidad a comprar y razon social del fabricante ordenada por razon social y
+     descripcion.
+
+     SELECT p.descripcion , (p.punto_reposicion - p.cantidad_stock) as cantidad_comprar,
+     f.razon_social 
+     FROM productos as p , fabricantes as f
+     WHERE p.cod_fabricante = f.cod_fabricante
+     AND p.cantidad_stock < p.punto_reposicion 
+     ORDER BY f.razon_social , p.descripcion
+
+   10)Listar aquellos empleados cuya cuota es menor 50000 o mayor a 100000
+   
+     SELECT e.* 
+     FROM empleados as e , datos_contratos as dc
+     WHERE e.cod_empleado = dc.cod_empleado
+     AND (dc.cuota < 50000 OR dc.cuota>100000)
+
+     SELECT e.* 
+     FROM empleados as e , datos_contratos as dc
+     WHERE e.cod_empleado = dc.cod_empleado
+     AND dc.cuota NOT BEETWENN (50.000 AND 100.000)
+
+
+
+Normalizacion Ejercicios:
+   10.6.6 Tenemos los siguientes requerimientos para una base de datos universitaria con que se manejan las boletas de notas de los estudiantes.
+          Para cada alumno consta su nombre, numero de legajo, direcci�n, telefono, otro telelono opcional, fecha de nacimiento, sexo, departamento
+          de carrera, departamento de especialidad.
+          Para cada departamento, figura su respectivo c�digo con su nombre.
+          Para cada curso: el nombre del curso, su codigo, n�mero de horas semanales, nivel, profesor a cargo, a�o.
+          Las boletas se conforman del numero de legajo, curso, nota y fecha.
+
+            a) Sere un conjunto de relaciones normalizadas.
+            b) Lleve todas las relaciones hasta 2FN.
+            C) Especifique los atributos clave de cada relaci�n.
+
+           Estudiantes(nombre, nLegajo, dire , te , teOpc ,fnaac , sexo , dpto-carr , depto-espec)  ->nLegajo primary key
+
+           dptos(nomdpto, codigo)   ->codigo es priamary key
+ 
+           cursos(nomcur, codcur, nrohs-sem, nivel, profesor, a�o)  ->codcur es primary key
+        
+           boletas(nLegajo,codcur, nota , fecha)  ->nlegajo y codcur son foreing key , a su vez estas dos
+                                                    mas fecha son la clave primaria compuesta
+
+
+     10.6.7(Ejercicio extraido de An�lisis Estructurado de Sistemas, de Chris Ga-ne y Trish Sarson, e
+            ditorial "El Ateneo)
+            Se trata de hacer una versi�n normalizada de la estructura que descri-
+            be una compra de libros a una Compania XZ.
+            Un pedido consiste en el nombre del cliente, la fecha del pedido, el
+            ISBN (codigo internacional �nico) del libro pedido, el titulo, el autor, la
+            cantidad que ha sido pedida, y el importe total del pedido para un libro
+            determinado.
+
+            (No olvidar que "normalizada" es sin�nimo de 1FN).
+
+           En 1FN:
+          
+           libro-ped (nom-clie,ped-fecha,isbn,titulo,autor,cantidad,precio,precio-total)
+
+           En 3FN:
+           
+           libros(isbn, titulo, autor, precio_unitario)  ->isbn es primary key
+           clientes(cod_cliente, nombre)                 ->cod_cliente es primary key
+           pedidos(cod_pedido, cod_cliente, isb, fecha_pedido, cantidad, importe_total)  ->cod_pedido es Primary Key
+                                                                                           cod_cliente y isbn son foreing key
+
+
+
+      10.6.8
+
+
+            departamentos(id_departamento,presupuesto,id_gerente)          ->id_departamento e id_gerente son pk compuesta
+            empleados(nro-emp,nro-prov,nro-of,nro-te)                      ->nro-emp es pk , nro-prov,nro-of y nro-te son foreign key
+            prov(nro-prov,presup,nro_dpto)                                 ->nro-prov es pk   y nro-dpto es foreign key
+            ofic(nro-of,area,nro-dpto)                                     ->nro-of es pk y nro-dpto es foreing key
+            telef(nro-tel,nro-of)                                          ->nro-tel es pk y nro-of es fk
+            his-sal(nro-emp,fecha,tit-trab,salario)                        ->nro-emo junto con fecha son pk compuesta     ,  nro emp es foreing key
+ 
+
+           no esta en 3F ya que en la tabla de empleados , nro-of y nro-te tiene una dependencia entre ellos
+
+Algebra Relacional Ejercicios:
+
+        Los ejercicios presentados a continuación utilizan las relaciones: PROVEEDOR
+        RES PRODUCTOS Y PROV-PROD. Para facilitar su uso, se repiten sus res
+        pectivas estructuras
+
+        PROVEEDORES (NUMERO, NOMBRE, DOMICILIO LOCALIDAD)
+        PRODUCTOS (PRONOMBRE, PRECIO, TAMA�O, LOCALIDAD)
+        PROV-PROD (NUMERO, PNRO, CANTIDAD)
+
+        Dar soluciones algebraicas a los siguientes ejercicios:
+
+        11.7.1 Obtener los detalles completos de todos los productos.
+
+               proveedores
+
+        11.7.2 Obtener los detalles completos de todos los proveedores de Capital.
+
+               proveedores where localidad = 'capital'
+
+        11.7.3 Obtener todos los envios en los cuales la cantidad esta entre 200 y 300
+               inclusive.
+
+               prov-prod where cantidad >=200 and cantidad <=300
+             
+               otra forma:
+ 
+               prov-prod where cantidad between 200 and 300
+
+        11.7.4 Obtener los números de los productos suministrados por algún provee
+               dor de Avellaneda.
+
+               (prov-prod [pnro] JOIN (proveedores where localidad = 'avellaneda'))
+
+               otra forma, invirtiendo las tablas para mostrar el "pnro":
+ 
+               (proveedores where localidad = 'avellaneda') JOIN prov-prod) [pnro]
+
+
+        11.7.5 Obtener los números de los productos y localidades en los cuales la
+               segunda letra del nombre de la localidad sea "a".
+
+               (productos where localidad like '_a%')[pnro,localidad]
+
+        11.7.6 Obtener los precios de los productos provistos por el proveedor 102.
+
+               ((prov-prod where numero = 102) JOIN productos)[precio]
+
+                otra forma, invirtiendo las tablas para mostrar el "precio":
+
+                (productos [precio] JOIN ( prov-prod where numero = 102))
+
+        11.7.7 Construir una lista de todas las localidades en las cuales esté situado
+               por lo menos un proveedor o un producto.
+
+               proveedores [localidad] UNION productos[localidad]
+
+
+        Plantear el siguiente ejercicio de acuerdo a las pautas que se consignan:
+
+        11.7.8 Una empresa de transporte tiene una flotilla de camiones, gruas, plumas, volquetes, transporte de contenedores y material de precisión.
+        La empresa posee una amplia cartera de clientes (empresas a quienes
+        les realiza sus traslados).
+        Sus clientes se encuentran clasificados por diferentes rubros el.: cons
+        trucción, alimentación, automotriz, puertos, empresas quimicas, en dis
+        tintos puntos del pals.
+        Cada tipo de transporte puede atender cualquier servicio de clientes d
+        su sector correspondiente a cualquier provincia.
+
+        a) R1 <- flotilla where descr = 'gruas' [cod-tipo]
+           
+           transp rename patente as tpatente
+
+           (transporte where cod-tipo = r1) minus
+           (viajes where patente = tpatente and
+            fecha >= xx/xx/xx and fecha <= xx/xx/xx))
+  
+        b) prov join clien
+
+        c)((viajes [cod-rubro]) JOIN rubro)[descrp]
+
+
+
+
+
+           
+
+
+          
+          
+
+   
+   
+   
+     
+    
+     
+       
+
+       
+     
+    
+
+        
+
+
+   
+
+              PRUEBAS DE EJERCICIOS 
+
+
+
+2 - obtener una lista de todos los productos indicando descripcion ...
+ 
+    select  __ ,___ , __ precio * 1.21 as iva (SE PUEDE HACER UN CALCULO EN
+    EL SELECT)
+
+
+   Select __ , ___, precio as iva , year (getDate()) - year(fecha-nacimiento)
+   as edad
+
+   esto es para tener edad
+
+4 - Listar todos los empleados que tienen un jefe asignado ,
+    en la tabla empleados hay una columna llamada "cod_jefe" y tiene que tener
+     un jefe asignado , para eso validamos nulidad .
+   
+     where cod_jefe is not null;
+                    is null;
+
+7 - Listar toda la informacion de los pedidos de marzo , usamos la funcion month
+    la cual devuelve un numero que corresponde al mes,
+    "fecha-pedido" va a ser de tipo "Date"
+
+    where month(fecha-pedido) = 3
+
+     where fecha-pedido like '_ _/03/_  _ _ _'
+
+9 - Listar los 4 productos de menor precio  de costo
+
+    select _ ,_,_,_ from tabla
+    order by precio  desc,
+    limit 4
+
+   el limit 4 me va a devolver los primeros 4 , en este caso al estar 
+   ya ordenado por precio desc no hay problema
+
+   -otra forma :
+
+    select  top 4_ ,_,_,_ from tabla
+    order by precio  desc,
+
+    el top 4 va a mostrar los primeros 4 con la condicion de order by precio desc
+
+
+
+
+
+
+
+
+
+   
